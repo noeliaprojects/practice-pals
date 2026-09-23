@@ -1,0 +1,9 @@
+{
+  "name": "Practice Pals",
+  "short_name": "Practice Pals",
+  "description": "Listening and speaking practice for young English learners.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FBF9F3",
+  "theme_color": "#E8543F"
+}
