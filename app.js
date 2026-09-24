@@ -219,7 +219,6 @@ let matchGame = null;
 let missingGame = null;
 let wordBankGame = null;
 let conversationState = {};
-let conversationVariantState = {};
 let lastRenderedRoute = null;
 let rolePlayState = {};
 let optionalChallengeState = {};
@@ -227,7 +226,6 @@ let speechToken = 0;
 let activeAudio = null;
 let activeAudioTimer = null;
 let audioManifest = null;
-let audioManifestLoaded = false;
 let availableSpeechVoices = [];
 let petShopPage = 0;
 let simonGame = null;
@@ -376,15 +374,12 @@ async function loadAudioManifest() {
     const response = await fetch("audio/audio-map.json", { cache: "no-cache" });
 
     if (!response.ok) {
-      audioManifestLoaded = true;
       audioManifest = null;
       return;
     }
 
     audioManifest = await response.json();
-    audioManifestLoaded = true;
   } catch {
-    audioManifestLoaded = true;
     audioManifest = null;
   }
 }
@@ -691,23 +686,12 @@ function getRoute() {
 
 function getCurrentSituation() {
   const route = getRoute();
-  const routeChanged = route !== lastRenderedRoute;
   lastRenderedRoute = route;
   const situationId = route.split("/").filter(Boolean)[0];
   return situations.find(item => item.id === situationId);
 }
 
-
-function conversationVariantKey(situationId, mode) {
-  return `${situationId}:${mode}`;
-}
-
-function resetConversationVariant(situationId, mode) {
-  delete conversationVariantState[conversationVariantKey(situationId, mode)];
-}
-
-
-function getConversationLines(situation, mode = "conversation") {
+function getConversationLines(situation) {
   // el camino principal usa una sola conversacion modelo fija
   // asi el audio grabado, Conversation, Missing words y Role-play van todos a la par
   return Array.isArray(situation?.conversation) ? situation.conversation : [];
@@ -1038,7 +1022,6 @@ function replayActivity(situationId, activity, route) {
 
   if (activity === "conversation") {
     conversationState[situationId] = false;
-    resetConversationVariant(situationId, "conversation");
   }
 
   if (activity === "match") {
@@ -3971,10 +3954,6 @@ function render() {
   }
 
   if (page === "conversation") {
-    if (routeChanged) {
-      resetConversationVariant(situation.id, "conversation");
-    }
-
     renderConversation(situation);
     return;
   }
@@ -3991,7 +3970,6 @@ function render() {
 
   if (page === "role-play") {
     if (routeChanged) {
-      resetConversationVariant(situation.id, "role-play");
       const state = ensureRolePlayState(situation.id);
       state.activeLineIndex = null;
       state.playingPartner = false;
