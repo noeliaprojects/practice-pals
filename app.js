@@ -161,11 +161,10 @@ const SIMON_ACTIONS = [
 
 const SIMON_TARGET_SCORE = 5;
 
-// iconos para las tarjetas de situations y el menu de actividades. cambie de
-// emoji a SVGs de verdad xq el emoji se ve distinto en cada movil/pc, un caos.
-// uso Tabler Icons (licencia MIT, de Paweł Kuna) - citado en referencias,
-// dejo el link de cada icono debajo por si acaso
-// (los iconos del Word Bank son otra cosa, eso esta mas abajo en renderWordImage)
+// iconos para las tarjetas de situations y el menu de actividades. 
+// uso Tabler Icons (licencia MIT, de Paweł Kuna) - 
+// dejo el link de cada icono
+
 const UI_ICONS = {
   // https://tabler.io/icons/icon/stethoscope
   doctor: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h-1a2 2 0 0 0 -2 2v3.5a5.5 5.5 0 0 0 11 0v-3.5a2 2 0 0 0 -2 -2h-1"/><path d="M8 15a6 6 0 1 0 12 0v-3"/><path d="M11 3v2"/><path d="M6 3v2"/><path d="M18 10a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/></svg>`,
@@ -241,9 +240,10 @@ let recordingState = {
   countdownTimer: null
 };
 
-// ---- Progress / estrellas (guardado con localStorage, sin cuentas ni login) ----
+// progress y estrellas (guardado con localStorage) 
 // recupera lo guardado la ultima vez, o empieza de 0 si no hay nada
 // (localStorage docs: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+//https://blog.logrocket.com/storing-retrieving-javascript-objects-localstorage/
 function loadProgress() {
   const saved = localStorage.getItem(STORAGE_KEY);
 
@@ -346,9 +346,6 @@ function availableStars() {
   return Math.max(0, earnedStars() - spentStars());
 }
 
-function totalStars() {
-  return availableStars();
-}
 
 function situationProgress(id) {
   const count = ACTIVITY_KEYS.filter(key => isActivityCompleted(id, key)).length;
@@ -360,9 +357,7 @@ function updateStarPill() {
   if (pill) pill.innerHTML = `${uiIcon("star")} ${availableStars()}`;
 }
 
-function shuffle(items) {
-  return [...items].sort(() => Math.random() - 0.5);
-}
+
 
 function escapeHtml(text) {
   return String(text)
@@ -374,7 +369,7 @@ function escapeHtml(text) {
 }
 
 
-// ---- Audio: reproducir las conversaciones grabadas, con speech-synthesis de backup ----
+// audio: reproducir las conversaciones grabadas, con speech-synthesis de backup 
 // audio-map.json le dice a la app que archivo grabado va con cada linea de dialogo
 async function loadAudioManifest() {
   try {
@@ -433,7 +428,7 @@ function clearActiveAudio() {
 }
 
 // si no hay audio grabado para esta linea, lo lee en voz alta con el
-// text-to-speech del propio navegador (Web Speech API / SpeechSynthesis)
+// text-to-speech del navegador (Web Speech API / SpeechSynthesis)
 // (https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)
 function fallbackSpeechLine(situation, line, token, onEnd) {
   const silentPause = () => {
@@ -445,10 +440,9 @@ function fallbackSpeechLine(situation, line, token, onEnd) {
     return;
   }
 
-  // si el dispositivo no tiene ninguna voz de ingles de verdad (pasa mucho sin
-  // internet, xq las voces buenas de ingles suelen ser "online"), mejor silencio
-  // que leerlo con la voz default del sistema - un ingles con acento random
-  // queda peor que una pausa
+  // si el dispositivo no tiene ninguna voz de ingles de verdad, mejor lo silencio
+  // que leerlo con la voz default del sistema
+  // queda horrible la voz en castellano leyendo en ingles, HORRIBLE
   if (!bestEnglishVoice(line.role)) {
     silentPause();
     return;
@@ -473,7 +467,7 @@ function playAudioOrFallback(situation, line, token, onEnd) {
 
   if (!source) {
     // no hay archivo grabado para esta linea (sin conexion o aun sin subir):
-    // uso el text-to-speech del propio movil en vez de dejarlo en silencio
+    // uso el text-to-speech del movil en vez de dejarlo en silencio
     fallbackSpeechLine(situation, line, token, onEnd);
     return;
   }
@@ -481,7 +475,7 @@ function playAudioOrFallback(situation, line, token, onEnd) {
   const audio = new Audio(source);
   audio.playbackRate = AUDIO_PLAYBACK_RATE;
 
-  // mantener el pitch original si el navegador lo permite
+  // mantener el pitch original 
   if ("preservesPitch" in audio) audio.preservesPitch = true;
   if ("mozPreservesPitch" in audio) audio.mozPreservesPitch = true;
   if ("webkitPreservesPitch" in audio) audio.webkitPreservesPitch = true;
@@ -496,7 +490,7 @@ function playAudioOrFallback(situation, line, token, onEnd) {
 
   audio.onerror = () => {
     // el audio esta en el manifest pero no ha cargado bien
-    // (sin conexion, archivo perdido, va lento...) asi que uso speech de todos modos
+    // (sin conexion, archivo perdido, va lento...) asi que uso speech igualmente
     if (token !== speechToken) return;
     activeAudio = null;
     fallbackSpeechLine(situation, line, token, onEnd);
@@ -611,15 +605,6 @@ function bestEnglishVoice(role = "") {
     .sort((a, b) => voiceScore(b, role) - voiceScore(a, role))[0];
 }
 
-function showSelectedVoice() {
-  const voice = bestEnglishVoice();
-
-  if (voice) {
-    console.log(`Practice Pals voice: ${voice.name} (${voice.lang})`);
-  } else {
-    console.log("Practice Pals voice: browser default");
-  }
-}
 
 function applyBestVoice(utterance, role = "") {
   const voice = bestEnglishVoice(role);
@@ -635,8 +620,7 @@ function applyBestVoice(utterance, role = "") {
 
 function speakText(text, rate = 0.86, pitch = 1) {
   if (!("speechSynthesis" in window)) return;
-  if (!bestEnglishVoice()) return; // sin voz de ingles real, mejor silencio que
-                                    // acento random
+  if (!bestEnglishVoice()) return; // sin voz de ingles real, mejor que no diga nada
 
   stopSpeech();
   const token = speechToken;
@@ -695,7 +679,7 @@ function stopActiveRecording() {
   }
 }
 
-// ---- Router simple: el hash de la URL decide que pantalla se ve ----
+//  Router simple: el hash de la URL decide que pantalla se ve 
 function goTo(route) {
   stopSpeech();
   window.location.hash = route;
@@ -722,15 +706,10 @@ function resetConversationVariant(situationId, mode) {
   delete conversationVariantState[conversationVariantKey(situationId, mode)];
 }
 
-function getConversationVariants(situation) {
-  return Array.isArray(situation.conversationVariants) && situation.conversationVariants.length
-    ? situation.conversationVariants
-    : [situation.conversation];
-}
 
 function getConversationLines(situation, mode = "conversation") {
   // el camino principal usa una sola conversacion modelo fija
-  // asi el audio grabado por la profe, Conversation, Missing words y Role-play van todos a la par
+  // asi el audio grabado, Conversation, Missing words y Role-play van todos a la par
   return Array.isArray(situation?.conversation) ? situation.conversation : [];
 }
 
@@ -760,7 +739,7 @@ function openSituation(situationId) {
   goTo(activityRoute(next || "word-bank", situationId));
 }
 
-// ---- Mascotas virtuales: comprar, poner nombre, elegir cual esta activa ----
+// VIRTUAL PETS: comprar, poner nombre, elegir cual esta activa 
 function catalogPet(id) {
   return PET_CATALOG.find(pet => pet.id === id) || STARTER_PET;
 }
@@ -969,7 +948,7 @@ function previousPetPage() {
   renderPetShop();
 }
 
-// ---- Que pasa cuando se completa una actividad: dar la estrella, mostrar el popup ----
+//cuando se completa una actividad: dar la estrella, mostrar el popup 
 function finishActivity(situationId, activity, nextRoute, replayRoute) {
   stopSpeech();
 
@@ -1093,7 +1072,7 @@ function replayActivity(situationId, activity, route) {
   window.location.hash = route;
 }
 
-// ---- Render de las pantallas (shell/footer, home, modal de accion con la mascota) ----
+// Render de las pantallas (shell/footer, home, modal de accion con la mascota) 
 function renderCreatorFooter() {
   return `
     <footer class="creator-footer">
@@ -1264,7 +1243,7 @@ function openPetActionModal(petId) {
   });
 }
 
-// ---- Simon Says: el juego opcional de verbos de accion, se desbloquea con la mascota ----
+//  Simon Says se desbloquea con la mascota 
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -1406,6 +1385,8 @@ function awardSimonStar() {
 // escucha el comando hablado con SpeechRecognition. algunos navegadores solo
 // lo tienen como webkitSpeechRecognition, asi que compruebo los dos nombres
 // (https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)
+// https://www.assemblyai.com/blog/speech-recognition-javascript-web-speech-api
+
 function startSimonListening() {
   if (!simonGame) return;
 
@@ -1604,7 +1585,7 @@ function renderSimonSays(petId) {
 
 
 
-// ---- Pantallas de Reflection: las preguntas que responden al acabar una situation ----
+//PANTALLAS DE REFLECTION
 function isSituationFullyCompleted(situationId) {
   return ACTIVITY_KEYS.every(key => isActivityCompleted(situationId, key));
 }
@@ -1863,8 +1844,8 @@ Thank you.
 }
 
 // abre una ventana de Gmail ya rellena en vez de montar un envio de email de
-// verdad (eso necesitaria backend). este truco de la URL lo encontre en un
-// foro de developers, no hay doc oficial de google, simplemente funciona xq
+// verdad (eso necesitaria backend, demasiada faena). esto salia en un
+// foro de developers, no hay doc oficial de google, funciona porq
 // gmail lee esos parametros (su = subject, body = body) al abrir el link
 // de compose
 function openFinalReflectionGmailDraft() {
@@ -2006,7 +1987,7 @@ function renderFinalReflection() {
   `);
 }
 
-// ---- Pantallas de Pet Shop y Activity Menu ----
+// pantallas PET SHOP y ACTIVITY MENU
 function renderPetShop() {
   const sortedCatalog = [...PET_CATALOG].sort((a, b) => {
     const aActive = progress.shop.activePetId === a.id ? 1 : 0;
@@ -2184,7 +2165,7 @@ function renderPageHead(title, subtitle, backRoute) {
   `;
 }
 
-// ---- Word Bank: repasar el vocabulario de la situation antes de practicar ----
+//  WORD BANK
 function startWordBank(situation) {
   if (!wordBankGame || wordBankGame.situationId !== situation.id) {
     wordBankGame = {
@@ -2301,7 +2282,7 @@ function updateWordBankUI(situation) {
   }
 }
 
-// ---- Conversation: escuchar las lineas del dialogo grabado ----
+// CONVERSATION
 function hasListenedConversation(id) {
   if (Object.prototype.hasOwnProperty.call(conversationState, id)) {
     return conversationState[id];
@@ -2384,7 +2365,7 @@ function playConversation(id) {
   speakConversationLines(situation, null, getConversationLines(situation, "conversation"));
 }
 
-// ---- Match expressions: el juego de arrastrar/tocar para emparejar ----
+//MATCH EXPRESSIONS
 function createMatchGame(situation) {
   const selected = (situation.fixedExpressions || []).slice(0, 5);
 
@@ -2544,7 +2525,7 @@ function selectRightPiece(id) {
   }, 500);
 }
 
-// ---- Missing words: rellenar los huecos de la conversacion ----
+//MISSING WORDS
 function createMissingGame(situation) {
   const scenario = (situation.missingScenarios || [])[0] || {
     id: "model-conversation",
@@ -2743,7 +2724,7 @@ function chooseMissingWord(id) {
   }, 450);
 }
 
-// ---- Role-play: elegir un personaje, grabarte diciendo las lineas, y compartirlo ----
+// ROLE PLAY
 function ensureRolePlayState(id) {
   if (!rolePlayState[id]) {
     rolePlayState[id] = {
@@ -3182,8 +3163,8 @@ Role: ${roleName}
   `.trim();
 
   // en movil esto abre el share sheet nativo (WhatsApp, Gmail, etc) con el
-  // audio ya adjunto. canShare() comprueba antes xq no todos los
-  // navegadores/dispositivos dejan compartir archivos, algunos solo texto/links
+  // audio ya adjunto. canShare() comprueba antes porq no todos los
+  // navegadores io dispositivos dejan compartir archivos, algunos solo texto o links
   // (https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share)
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
@@ -3248,7 +3229,7 @@ Thank you.
 }
 
 
-// ---- Optional Challenge: escriben + graban su propio dialogo en vez del fijo ----
+// OPTIONAL CHALLENGE
 function ensureOptionalChallengeState(id) {
   if (!optionalChallengeState[id]) {
     optionalChallengeState[id] = {
@@ -3307,20 +3288,6 @@ function optionalChallengeGapGroups(challenge) {
   return [...groups.values()];
 }
 
-function optionalChallengeOptions(challenge) {
-  const options = new Map();
-
-  optionalChallengeGapGroups(challenge).forEach(group => {
-    group.options.forEach(text => {
-      const id = optionId(text);
-      if (!options.has(id)) {
-        options.set(id, { id, text });
-      }
-    });
-  });
-
-  return [...options.values()];
-}
 
 function challengeGapColorClass(challenge, gapId) {
   const group = optionalChallengeGapGroups(challenge).find(item => item.id === gapId);
@@ -3482,36 +3449,6 @@ function renderOptionalChallenge(situation) {
 }
 
 
-function selectChallengeGap(situationId, gapId) {
-  const state = ensureOptionalChallengeState(situationId);
-  state.selectedGapId = gapId;
-  state.message = "Choose one of the words with the same colour.";
-
-  const situation = situations.find(item => item.id === situationId);
-  if (situation) renderOptionalChallenge(situation);
-}
-
-function chooseChallengeOptionForGap(situationId, gapId, optionIdValue) {
-  const situation = situations.find(item => item.id === situationId);
-  if (!situation) return;
-
-  const challenge = optionalChallengeConfig(situation);
-  const state = ensureOptionalChallengeState(situationId);
-  const gap = (challenge.gaps || []).find(item => item.id === gapId);
-  const optionText = gap && (gap.options || []).find(text => optionId(text) === optionIdValue);
-
-  if (!gap || !optionText) return;
-
-  state.answers[gap.id] = optionText;
-  state.selectedGapId = null;
-  state.wrongOptionId = null;
-  state.message = optionalChallengeIsComplete(challenge, state)
-    ? "Great. Your dialogue is ready to record."
-    : "Good choice. Choose the next gap.";
-
-  renderOptionalChallenge(situation);
-}
-
 function chooseChallengeSelect(situationId, gapId, value) {
   const situation = situations.find(item => item.id === situationId);
   if (!situation || !value) return;
@@ -3530,20 +3467,6 @@ function chooseChallengeSelect(situationId, gapId, value) {
   renderOptionalChallenge(situation);
 }
 
-function chooseChallengeOption(situationId, optionIdValue) {
-  const situation = situations.find(item => item.id === situationId);
-  if (!situation) return;
-
-  const state = ensureOptionalChallengeState(situationId);
-
-  if (!state.selectedGapId) {
-    state.message = "Choose a gap first.";
-    renderOptionalChallenge(situation);
-    return;
-  }
-
-  chooseChallengeOptionForGap(situationId, state.selectedGapId, optionIdValue);
-}
 
 function resetOptionalChallenge(situationId) {
   const state = ensureOptionalChallengeState(situationId);
@@ -3789,7 +3712,7 @@ Dialogue:\n${dialogue}
   openOptionalChallengeGmailDraft(situationId);
 }
 
-// otra vez el mismo truco de gmail, con el texto del optional challenge
+// otra vez lo mismo de gmail, con el texto del optional challenge
 function openOptionalChallengeGmailDraft(situationId) {
   const situation = situations.find(item => item.id === situationId);
   const state = ensureOptionalChallengeState(situationId);
@@ -3830,8 +3753,7 @@ Thank you.
 }
 
 function renderWordImage(key) {
-  // las ilustraciones de vocabulario van con emoji, igual que el resto del
-  // Word Bank, no hacia falta dibujar SVGs para esto
+  // las imagenes de vocabulario con emojis
   const emojiImages = {
     "canteen": "🍽️",
     "menu": "📋",
@@ -3980,8 +3902,8 @@ function renderWordImage(key) {
   return `<span class="word-illustration word-emoji-illustration"><span>${emojiImages[key] || "❓"}</span></span>`;
 }
 
-// ---- Render principal: mira la ruta actual (hash de la URL) y pinta la
-// pantalla que toca. Se llama cada vez que cambia el hash, ver goTo() arriba ----
+// Render principal: mira la ruta actual (hash de la URL) y pinta la
+// pantalla que toca. Se llama cada vez que cambia el hash, ver goTo() arriba
 function render() {
   stopSpeech();
   stopActiveRecording();
