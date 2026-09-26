@@ -153,42 +153,6 @@ svg {
   }
 }
 
-/* la tarjeta grande de bienvenida arriba del todo en home */
-.hero {
-  position: relative;
-  background: var(--card);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-lg);
-  padding: clamp(24px, 5vw, 40px);
-  box-shadow: var(--shadow-pop);
-  margin-bottom: 22px;
-}
-
-.hero h2 {
-  margin: 0;
-  max-width: 14ch;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.9rem, 5vw, 3.1rem);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-}
-
-.hero p {
-  max-width: 480px;
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.55;
-}
-
-.section-title {
-  margin: 28px 0 14px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-
 /* las 8 tarjetas de situations (At the doctor, At the canteen, etc) en home */
 .situation-grid {
   display: grid;
@@ -1424,13 +1388,6 @@ svg {
     display: none;
   }
 
-  .hero {
-    border-radius: 26px;
-  }
-
-  .hero h2 {
-    font-size: clamp(2rem, 10vw, 3rem);
-  }
 
   .page-head {
     grid-template-columns: 42px 1fr 42px;

@@ -1149,9 +1149,6 @@ function renderHome() {
 
   renderShell(`
     <section class="screen">
-      <div class="hero">
-        <h2>Pick a situation and start talking.</h2>
-        <p>Listen to conversations and practise them.</p>
       </div>
 
       <h2 class="section-title">Your situations</h2>
